@@ -8,7 +8,7 @@ const axios = require('axios');
 const getVideogames = async () => {
     try {
         const games = [];
-        let url = `${API}?api_key=${API_KEY}`;
+        let url = `${API}?key=${API_KEY}`;
         for (let i = 1; i < 8; i++) {
             let pages = await axios.get(url);
             pages.data?.results.forEach((e) => {
@@ -18,7 +18,11 @@ const getVideogames = async () => {
                     background_image: e.background_image,
                     rating: e.rating,
                     genres: e.genres.map((gender) => gender.name),
-                    platforms: e.platforms.map((platforms) => platforms.name),
+                    platforms: e.parent_platforms.map((e) => {
+                        return {
+                            name: e.platform.name
+                        }
+                    }),
                 })
             })
             url = pages.data.next
@@ -56,20 +60,27 @@ const getDbGames = async () => {
     return newDataGame;
 };
 
-const getAllInfo = () => {
-    try {
-        let allInfo = Promise.all([getVideogames(), getDbGames()].then(
-            (resultado) => {
-                return [...resultado[0], ...resultado[1]];
-            }
-        ))
-        return allInfo;
-    } catch (error) {
-        console.log(error);
-    }
-};
+const getAllInfo = async function () {  //JUNTA LAS DOS INFO
+    const apiData = await getVideogames()
+    const bdData = await getDbGames()
+    const allData = apiData.concat(bdData)
+    return allData;
+}
 
-router.get('/videogames', async (req, res) => {
+// const getAllInfo = () => {
+//     try {
+//         let allInfo = Promise.all([getVideogames(), getDbGames()].then(
+//             (resultado) => {
+//                 return [...resultado[0], ...resultado[1]];
+//             }
+//         ))
+//         return allInfo;
+//     } catch (error) {
+//         console.log(error);
+//     }
+// };
+
+router.get('/', async (req, res) => {
     const { name } = req.query;
 
     const allGames = await getAllInfo();
@@ -84,6 +95,8 @@ router.get('/videogames', async (req, res) => {
         res.status(200).send(allGames);
     }
 })
+
+
 
 
 
