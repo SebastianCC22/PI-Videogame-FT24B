@@ -17,7 +17,7 @@ const getVideogames = async () => {
                     name: e.name,
                     background_image: e.background_image,
                     rating: e.rating,
-                    genres: e.genres.map((gender) => gender.name),
+                    genres: e.genres.map((e) => e.name),
                     platforms: e.parent_platforms.map((e) => {
                         return {
                             name: e.platform.name
